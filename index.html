@@ -707,19 +707,37 @@ That's all there is to it. Replace this text with your own script, press start, 
   }
 
   function hideIfForeign(el) {
-    if (el.nodeType !== 1) return; // elements only
+    if (!el || el.nodeType !== 1) return; // elements only
     if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
     if (isOurs(el)) return;
     el.style.setProperty('display', 'none', 'important');
+  }
+
+  // Sweep every direct child of <body> (and <html>, in case it attaches
+  // there) that isn't ours. Some ad scripts pre-create their elements
+  // early and merely toggle visibility/attributes later rather than
+  // adding brand-new nodes, which a childList-only observer would miss —
+  // so this runs on a timer too, not just on mutation events.
+  function sweepForeignElements() {
+    if (!prompting) return;
+    Array.from(document.body.children).forEach(hideIfForeign);
+    Array.from(document.documentElement.children).forEach(el => {
+      if (el.tagName !== 'HEAD' && el.tagName !== 'BODY') hideIfForeign(el);
+    });
   }
 
   const adObserver = new MutationObserver(mutations => {
     if (!prompting) return;
     for (const m of mutations) {
       m.addedNodes.forEach(hideIfForeign);
+      if (m.type === 'attributes' && m.target) hideIfForeign(m.target);
     }
   });
-  adObserver.observe(document.documentElement, { childList: true, subtree: true });
+  adObserver.observe(document.documentElement, {
+    childList: true, subtree: true, attributes: true,
+    attributeFilter: ['style', 'class', 'hidden']
+  });
+  setInterval(sweepForeignElements, 250);
 
   function loadAd() {
     if (adScriptEl) return; // already loaded
