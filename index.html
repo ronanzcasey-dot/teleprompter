@@ -596,6 +596,7 @@
     buildScript(text);
     pos = 0;
     if (words[0]) words[0].el.classList.add('current');
+    removeAd();
     $('setup').style.display = 'none';
     $('prompter').style.display = 'block';
     currentScroll = scrollArea.scrollTop = 0;
@@ -615,6 +616,7 @@
     $('prompter').classList.remove('paused');
     $('prompter').style.display = 'none';
     $('setup').style.display = 'flex';
+    loadAd();
   });
 
   $('restart-btn').addEventListener('click', () => {
@@ -674,10 +676,33 @@ You can press escape to exit, space bar to pause and resume, and place text in a
 If the recognition ever misses a word or two, don't worry. It looks ahead in the script and recovers as soon as it hears you again.
 
 That's all there is to it. Replace this text with your own script, press start, and just speak naturally!`;
+  // ---------- Ads (setup screen only) ----------
+  // Monetag's In-Page Push tag self-injects its own ad element into the
+  // page rather than filling a container we control, so to keep ads off
+  // the actual prompting screen we only load the tag while on setup, and
+  // strip out whatever it added to <body> the moment Start is clicked.
+  const AD_ZONE = '11254160';
+  let adScriptEl = null;
+
+  function loadAd() {
+    if (adScriptEl) return; // already loaded
+    adScriptEl = document.createElement('script');
+    adScriptEl.dataset.zone = AD_ZONE;
+    adScriptEl.src = 'https://nap5k.com/tag.min.js';
+    document.body.appendChild(adScriptEl);
+  }
+
+  function removeAd() {
+    // Remove the tag itself plus any sibling elements it appended to
+    // <body> (its ad units), leaving only our own #setup/#prompter.
+    if (adScriptEl) { adScriptEl.remove(); adScriptEl = null; }
+    Array.from(document.body.children).forEach(el => {
+      if (el.id !== 'setup' && el.id !== 'prompter') el.remove();
+    });
+  }
+
+  loadAd();
 })();
 </script>
-
-<!-- Monetag In-Page Push (Banner) zone 11254160 -->
-<script>(function(s){s.dataset.zone='11254160',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
