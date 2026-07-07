@@ -14,27 +14,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { background: #000; color: #fff; font-family: 'Times New Roman', Georgia, serif; height: 100%; }
 
-  /* ---------- Ad wings (home/setup screen only) ---------- */
-  /* Fixed to the left/right edges of the viewport, outside the centered
-     760px setup column, so they never crowd the script textarea. Hidden
-     on narrow viewports where there's no room beside the content. */
-  .ad-wing {
-    position: fixed; top: 0; bottom: 0; width: 160px;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1;
-  }
-  #ad-wing-left  { left: 0; }
-  #ad-wing-right { right: 0; }
-  .ad-wing-slot {
-    width: 160px; min-height: 600px;
-    display: flex; align-items: center; justify-content: center;
-    color: #444; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 12px; text-align: center; padding: 8px;
-  }
-  @media (max-width: 1150px) {
-    .ad-wing { display: none; }
-  }
-
   /* ---------- Setup screen ---------- */
   #setup {
     max-width: 760px; margin: 0 auto; padding: 48px 24px;
@@ -195,21 +174,6 @@
 </style>
 </head>
 <body>
-
-<div id="ad-wing-left" class="ad-wing">
-  <div class="ad-wing-slot">
-    <!-- PropellerAds: paste your zone's ad script/tag here (e.g. a 160x600
-         banner zone). This slot is only shown/hidden together with #setup. -->
-    Ad
-  </div>
-</div>
-<div id="ad-wing-right" class="ad-wing">
-  <div class="ad-wing-slot">
-    <!-- PropellerAds: paste your zone's ad script/tag here (e.g. a 160x600
-         banner zone). This slot is only shown/hidden together with #setup. -->
-    Ad
-  </div>
-</div>
 
 <div id="setup">
   <h1>Automatic Voice Teleprompter</h1>
@@ -633,8 +597,6 @@
     pos = 0;
     if (words[0]) words[0].el.classList.add('current');
     $('setup').style.display = 'none';
-    $('ad-wing-left').style.display = 'none';
-    $('ad-wing-right').style.display = 'none';
     $('prompter').style.display = 'block';
     currentScroll = scrollArea.scrollTop = 0;
     scheduleScroll();
@@ -653,8 +615,6 @@
     $('prompter').classList.remove('paused');
     $('prompter').style.display = 'none';
     $('setup').style.display = 'flex';
-    $('ad-wing-left').style.display = 'flex';
-    $('ad-wing-right').style.display = 'flex';
   });
 
   $('restart-btn').addEventListener('click', () => {
@@ -716,5 +676,8 @@ If the recognition ever misses a word or two, don't worry. It looks ahead in the
 That's all there is to it. Replace this text with your own script, press start, and just speak naturally!`;
 })();
 </script>
+
+<!-- Monetag In-Page Push (Banner) zone 11254160 -->
+<script>(function(s){s.dataset.zone='11254160',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
