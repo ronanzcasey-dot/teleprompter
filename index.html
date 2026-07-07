@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automatic Voice Teleprompter</title>
+<style>
+  :root {
+    --font-size: 52px;
+    --dim: #4a4a4a;
+    --current: #ffffff;
+    --upcoming: #d8d8d8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #000; color: #fff; font-family: 'Times New Roman', Georgia, serif; height: 100%; }
+
+  /* ---------- Ad wings (home/setup screen only) ---------- */
+  /* Fixed to the left/right edges of the viewport, outside the centered
+     760px setup column, so they never crowd the script textarea. Hidden
+     on narrow viewports where there's no room beside the content. */
+  .ad-wing {
+    position: fixed; top: 0; bottom: 0; width: 160px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+  }
+  #ad-wing-left  { left: 0; }
+  #ad-wing-right { right: 0; }
+  .ad-wing-slot {
+    width: 160px; min-height: 600px;
+    display: flex; align-items: center; justify-content: center;
+    color: #444; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px; text-align: center; padding: 8px;
+  }
+  @media (max-width: 1150px) {
+    .ad-wing { display: none; }
+  }
+
+  /* ---------- Setup screen ---------- */
+  #setup {
+    max-width: 760px; margin: 0 auto; padding: 48px 24px;
+    display: flex; flex-direction: column; gap: 20px; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #setup h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  #setup p.hint { color: #888; font-size: 14px; line-height: 1.5; }
+
+  /* script-wrap now lays the textarea and the size-preview side by side */
+  #script-wrap { flex: 1; min-height: 260px; display: flex; gap: 16px; }
+  #script-input {
+    flex: 1; background: #111; color: #eee; border: 1px solid #2a2a2a;
+    border-radius: 10px; padding: 18px; font-size: 17px; line-height: 1.6;
+    font-family: inherit; resize: none; outline: none;
+  }
+  #script-input:focus { border-color: #555; }
+  .setup-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .setup-row label { color: #aaa; font-size: 14px; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 220px; height: 4px; border-radius: 2px;
+    background: #3a3a3a; outline: none; cursor: pointer;
+    vertical-align: middle;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    border: none; margin-top: 0;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px; border-radius: 2px; background: #3a3a3a;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%; background: #fff; border: none;
+  }
+
+  /* size preview now sits in its own column to the right of the textarea,
+     instead of being absolutely positioned on top of it */
+  #size-preview {
+    width: 70px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 6px;
+    font-family: 'Times New Roman', Georgia, serif; font-weight: 500;
+    font-size: 52px; line-height: 1; color: #666;
+    pointer-events: none;
+  }
+
+  #start-btn {
+    background: #fff; color: #000; border: none; border-radius: 10px;
+    padding: 16px 32px; font-size: 17px; font-weight: 600; cursor: pointer;
+  }
+  #start-btn:hover { background: #ddd; }
+  #compat-warning {
+    display: none; background: #3a1a1a; border: 1px solid #7a3a3a; color: #f0b0b0;
+    border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.5;
+  }
+
+  /* ---------- Prompter screen ---------- */
+  #prompter { display: none; height: 100%; overflow: hidden; position: relative; }
+  #prompter.mirrored #scroll-area { transform: scaleX(-1); }
+  #scroll-area {
+    height: 100%; overflow-y: hidden; padding: 45vh 3vw 60vh;
+  }
+  #script-text {
+    font-size: var(--font-size); line-height: 1.55; font-weight: 500;
+    max-width: 66vw; margin: 0 auto; text-align: left;
+  }
+  #script-text .w {
+    color: var(--upcoming);
+  }
+  #script-text .w.current { color: var(--current); }
+  #script-text .w.spoken  { color: var(--dim); }
+  #script-text .note {
+    font-style: italic; color: var(--dim);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* reading guide line */
+  #guide {
+    position: absolute; left: 0; right: 0; top: 40vh; height: 0;
+    border-top: 1px solid rgba(255,255,255,0.12); pointer-events: none;
+  }
+  #guide::before {
+    content: ''; position: absolute; left: 14px; top: -7px;
+    border: 7px solid transparent; border-left-color: rgba(255,255,255,0.5);
+  }
+
+  /* ---------- Controls overlay ---------- */
+  #controls {
+    position: absolute; top: 0; left: 0; right: 0; padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    opacity: 0; transition: opacity 0.3s; z-index: 10;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent);
+  }
+  #prompter:hover #controls, #controls.pinned { opacity: 1; }
+  #controls button {
+    background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+  }
+  #controls button:hover { background: rgba(255,255,255,0.2); }
+  #ease-control {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #999;
+  }
+  #ease-control label { user-select: none; }
+  #ease-control input[type="range"] { width: 70px; height: 4px; }
+
+  #mic-status {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #999;
+  }
+  #mic-dot { width: 10px; height: 10px; border-radius: 50%; background: #555; }
+  #mic-dot.live { background: #3ddc68; box-shadow: 0 0 8px #3ddc68; animation: pulse 1.4s infinite; }
+  #mic-dot.error { background: #e05252; }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+
+  #stats {
+    position: absolute; top: 50px; left: 0; right: 0; z-index: 5;
+    display: flex; justify-content: center; gap: 56px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    pointer-events: none;
+  }
+  #stats .stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  #stats .stat b {
+    font-size: 34px; font-weight: 700; color: #eee; letter-spacing: -0.5px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  #stats .stat .label {
+    font-size: 12px; letter-spacing: 0.6px; color: #777; text-transform: uppercase;
+  }
+
+  #heard {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 18px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 18px; color: #999; text-align: center; z-index: 10;
+    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ---------- Pause overlay ---------- */
+  #prompter.paused #scroll-area,
+  #prompter.paused #guide {
+    filter: blur(10px);
+  }
+  #pause-overlay {
+    display: none; position: absolute; inset: 0; z-index: 15;
+    align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    font-size: 88px; font-weight: 700; color: #fff; letter-spacing: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #prompter.paused #pause-overlay { display: flex; }
+</style>
+</head>
+<body>
+
+<div id="ad-wing-left" class="ad-wing">
+  <div class="ad-wing-slot">
+    <!-- PropellerAds: paste your zone's ad script/tag here (e.g. a 160x600
+         banner zone). This slot is only shown/hidden together with #setup. -->
+    Ad
+  </div>
+</div>
+<div id="ad-wing-right" class="ad-wing">
+  <div class="ad-wing-slot">
+    <!-- PropellerAds: paste your zone's ad script/tag here (e.g. a 160x600
+         banner zone). This slot is only shown/hidden together with #setup. -->
+    Ad
+  </div>
+</div>
+
+<div id="setup">
+  <h1>Automatic Voice Teleprompter</h1>
+  <p class="hint">Paste your script below, hit Start, and  speak. The prompter listens and scrolls
+  to wherever you are. Works best in Chrome or Edge.
+  Arrow keys nudge the position manually if it ever loses you.</p>
+  <div id="compat-warning">
+    This browser doesn't support the Web Speech API, so voice tracking won't work.
+    Please use Chrome, Edge, or Safari.
+  </div>
+  <div id="script-wrap">
+    <textarea id="script-input" placeholder="Paste your script here..."></textarea>
+    <span id="size-preview" aria-hidden="true">A</span>
+  </div>
+  <div class="setup-row">
+    <label>Text size <input type="range" id="size-slider" min="24" max="120" value="52"></label>
+    <button id="start-btn">▶&nbsp; Start prompting</button>
+  </div>
+</div>
+
+<div id="prompter">
+  <div id="guide"></div>
+  <div id="scroll-area"><div id="script-text"></div></div>
+  <div id="stats">
+    <div class="stat"><b id="wpm-val">--</b><span class="label">wpm</span></div>
+    <div class="stat"><b id="time-val">0:00</b><span class="label">elapsed</span></div>
+    <div class="stat"><b id="est-val">~--:--</b><span class="label">est. total</span></div>
+  </div>
+  <div id="controls">
+    <button id="back-btn">← Edit script</button>
+    <button id="restart-btn">⟲ Restart</button>
+    <button id="mirror-btn">⇋ Mirror</button>
+    <button id="smaller-btn">A−</button>
+    <button id="bigger-btn">A+</button>
+    <span id="ease-control" title="How quickly the scroll catches up to your voice">
+      <label for="ease-slider">Smooth</label>
+      <input type="range" id="ease-slider" min="1" max="10" value="4">
+      <label for="ease-slider">Snappy</label>
+    </span>
+    <span id="mic-status"><span id="mic-dot"></span><span id="mic-label">mic off</span></span>
+  </div>
+  <div id="heard"></div>
+  <div id="pause-overlay">PAUSED</div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) $('compat-warning').style.display = 'block';
+
+  // ---------- State ----------
+  let words = [];        // [{norm, el}]
+  let pos = 0;           // index of the next word we expect to hear
+  let recognition = null;
+  let listening = false; // whether we *want* to be listening
+  let targetScroll = 0;
+  let currentScroll = 0;
+  let rafId = null;
+  let scrollEase = 0.16; // how much of the remaining distance to close per frame
+  let paused = false;
+  let pausedAt = null; // performance.now() when pause started, for stats continuity
+
+  const scrollArea = $('scroll-area');
+
+  // ---------- Text handling ----------
+  const normalize = w => w.toLowerCase().replace(/[^a-z0-9']/g, '');
+
+  function buildScript(text) {
+    const container = $('script-text');
+    container.innerHTML = '';
+    words = [];
+    for (const para of text.split(/\n+/)) {
+      if (!para.trim()) continue;
+      const p = document.createElement('p');
+      p.style.marginBottom = '0.8em';
+      // Split into alternating spoken text and *note* segments — text
+      // wrapped in asterisks is a stage direction (e.g. "*gesture to the
+      // slides*"): shown for the reader but never expected to be spoken,
+      // so it's excluded from the word-tracking array entirely.
+      const segments = para.split(/(\*[^*]+\*)/g);
+      for (const seg of segments) {
+        if (!seg) continue;
+        const noteMatch = seg.match(/^\*([^*]+)\*$/);
+        if (noteMatch) {
+          const note = document.createElement('span');
+          note.className = 'note';
+          note.textContent = noteMatch[1].trim() + ' ';
+          p.appendChild(note);
+          continue;
+        }
+        for (const raw of seg.split(/\s+/)) {
+          if (!raw) continue;
+          const span = document.createElement('span');
+          span.className = 'w';
+          span.textContent = raw + ' ';
+          p.appendChild(span);
+          const norm = normalize(raw);
+          if (norm) words.push({ norm, el: span });
+        }
+      }
+      container.appendChild(p);
+    }
+  }
+
+  // Levenshtein edit distance — used to catch misheard/mistranscribed
+  // words that a plain prefix check would miss (e.g. "there" vs "their",
+  // "affect" vs "effect", garbled endings).
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    let prev = new Array(n + 1);
+    let cur = new Array(n + 1);
+    for (let j = 0; j <= n; j++) prev[j] = j;
+    for (let i = 1; i <= m; i++) {
+      cur[0] = i;
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      [prev, cur] = [cur, prev];
+    }
+    return prev[n];
+  }
+
+  // Loose match: exact, a prefix/suffix match (handles plurals, -ing
+  // endings), or "decently similar" by edit distance — tolerant of the
+  // kind of misheard-word errors speech recognition makes.
+  function wordsMatch(a, b) {
+    if (a === b) return true;
+    if (a.length >= 4 && b.length >= 4) {
+      const shorter = a.length < b.length ? a : b;
+      const longer  = a.length < b.length ? b : a;
+      if (longer.startsWith(shorter) && longer.length - shorter.length <= 3) return true;
+    }
+    if (a.length >= 3 && b.length >= 3) {
+      const dist = levenshtein(a, b);
+      const maxLen = Math.max(a.length, b.length);
+      if (dist / maxLen <= 0.34) return true;
+    }
+    return false;
+  }
+
+  // How many of the heard phrase's words line up with the script words at
+  // the exact same positions. Purely positional (no searching, no skipping
+  // script words) — this only tells us "the next N words were said well
+  // enough", never "the reader jumped ahead N words".
+  function phraseMatchRatio(heard, script) {
+    const n = Math.min(heard.length, script.length);
+    if (n === 0) return 0;
+    let matched = 0;
+    for (let i = 0; i < n; i++) {
+      if (wordsMatch(heard[i], script[i].norm)) matched++;
+    }
+    return matched / n;
+  }
+
+  // Three-tier tracking:
+  //  1. Strict: a heard word only advances the position if it matches the
+  //     current spot (or the single next word, to tolerate one skipped/
+  //     unspoken filler). It can never jump multiple words ahead on a
+  //     single match, so a stray misheard word during a pause can't gray
+  //     out unspoken text or jump to the start of the next sentence.
+  //  2. Phrase confirm: if nothing matched where we are, compare the last
+  //     few heard words directly against the SAME NUMBER of script words
+  //     starting at the current position — nowhere else. If most of them
+  //     (PHRASE_THRESHOLD) line up, the recognizer probably just mangled a
+  //     word or two, so we advance exactly that many words. This never
+  //     looks further ahead than the current spot, so a weak/partial match
+  //     can't leap over unspoken text.
+  //  3. Deliberate skip: if the reader jumps ahead on purpose (skipping a
+  //     line, restarting a sentence further on, etc.), tier 1/2 won't find
+  //     anything near `pos`. Only here do we search further ahead — and
+  //     only a FULL, essentially-exact match on the whole probe phrase
+  //     qualifies, no partial-credit tolerance. That keeps the skip
+  //     deliberate: "say enough correct words in a row and we'll believe
+  //     you skipped ahead," never "a couple of words sounded close."
+  const NEAR = 1;               // strict window for single-word advancement
+  const PHRASE_LEN = 5;         // how many recent heard words form the in-place probe phrase
+  const PHRASE_THRESHOLD = 0.7; // fraction of the phrase that must line up in-place (30% tolerance)
+  const SKIP_PHRASE_LEN = 4;    // consecutive exact-matching words required to trust a deliberate skip ahead
+
+  function advance(heardWords) {
+    let moved = false;
+    for (const hw of heardWords) {
+      const limit = Math.min(words.length, pos + NEAR);
+      for (let j = pos; j < limit; j++) {
+        if (wordsMatch(hw, words[j].norm)) {
+          setPos(j + 1);
+          moved = true;
+          break;
+        }
+      }
+    }
+    if (!moved && heardWords.length >= 2) {
+      const phrase = heardWords.slice(-PHRASE_LEN);
+      const window = words.slice(pos, pos + phrase.length);
+      // The last word of the window is the one we're about to mark spoken as
+      // of right now — it must actually have been heard, never assumed from
+      // the tolerance budget. Only the words before it get any slack.
+      const lastConfirmed = window.length === phrase.length &&
+        wordsMatch(phrase[phrase.length - 1], window[window.length - 1].norm);
+      if (lastConfirmed && phraseMatchRatio(phrase, window) >= PHRASE_THRESHOLD) {
+        setPos(pos + phrase.length);
+        moved = true;
+      }
+    }
+    if (!moved && heardWords.length >= SKIP_PHRASE_LEN) {
+      const phrase = heardWords.slice(-SKIP_PHRASE_LEN);
+      const jumpTo = findExactSkipAhead(phrase, pos + 1);
+      if (jumpTo !== null) {
+        setPos(jumpTo);
+        moved = true;
+      }
+    }
+    if (moved) {
+      startStatsTimer(); // no-op if already running — this is the first real autoscroll
+      scheduleScroll();
+    }
+  }
+
+  // Search ahead of the current position for the nearest run of script
+  // words that fully matches the heard phrase, word for word (still via
+  // wordsMatch's fuzzy check for minor mishears, but every word must
+  // match — no dropped or wrong words allowed). Returns the index just
+  // past the match, or null if nothing ahead qualifies.
+  function findExactSkipAhead(phrase, from) {
+    for (let s = Math.max(from, 0); s <= words.length - phrase.length; s++) {
+      let ok = true;
+      for (let i = 0; i < phrase.length; i++) {
+        if (!wordsMatch(phrase[i], words[s + i].norm)) { ok = false; break; }
+      }
+      if (ok) return s + phrase.length;
+    }
+    return null;
+  }
+
+  // Confirmed position from the recognizer. This is the only thing that
+  // moves the reader now — no audio-level prediction, so there's a small,
+  // honest lag while the recognizer catches up to what was actually said.
+  function setPos(newPos) {
+    newPos = Math.max(0, Math.min(words.length, newPos));
+    if (newPos === pos) return;
+    const fwd = newPos > pos;
+    const lo = Math.min(pos, newPos), hi = Math.max(pos, newPos);
+    for (let i = lo; i < hi; i++) words[i].el.classList.toggle('spoken', fwd);
+    if (words[pos]) words[pos].el.classList.remove('current');
+    if (words[newPos]) words[newPos].el.classList.add('current');
+    pos = newPos;
+    if (pos >= words.length && words.length > 0) finishStatsTimer();
+    scheduleScroll();
+  }
+
+  // ---------- Scrolling ----------
+  function scheduleScroll() {
+    const anchor = words[Math.min(pos, words.length - 1)];
+    if (!anchor) return;
+    const guideY = window.innerHeight * 0.40;
+    targetScroll = anchor.el.offsetTop - guideY;
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+
+  function tick() {
+    const diff = targetScroll - currentScroll;
+    if (Math.abs(diff) < 0.5) {
+      currentScroll = targetScroll;
+      scrollArea.scrollTop = currentScroll;
+      rafId = null;
+      return;
+    }
+    currentScroll += diff * scrollEase; // easing — smooth, no jumps
+    scrollArea.scrollTop = currentScroll;
+    rafId = requestAnimationFrame(tick);
+  }
+
+  // ---------- Speech recognition ----------
+  const micDot = $('mic-dot'), micLabel = $('mic-label'), heardEl = $('heard');
+
+  function startListening() {
+    if (!SR) return;
+    listening = true;
+    recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || 'en-US';
+
+    recognition.onstart = () => {
+      micDot.className = 'live';
+      micLabel.textContent = 'listening';
+    };
+
+    recognition.onresult = (event) => {
+      if (paused) return; // words spoken while paused are discarded entirely
+      // Collect the transcript of everything in this recognition session,
+      // then match only the tail — earlier words were already consumed.
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript + ' ';
+      }
+      const heard = transcript.trim().split(/\s+/).map(normalize).filter(Boolean);
+      heardEl.textContent = '“…' + heard.slice(-8).join(' ') + '”';
+      advance(heard.slice(-6));
+    };
+
+    recognition.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        listening = false;
+        micDot.className = 'error';
+        micLabel.textContent = 'mic blocked — allow microphone access';
+      }
+      // 'no-speech' and 'aborted' are routine; onend handles the restart.
+    };
+
+    // Chrome kills continuous sessions after a while — restart seamlessly.
+    recognition.onend = () => {
+      if (listening) {
+        try { recognition.start(); } catch (_) {
+          setTimeout(() => { if (listening) startListening(); }, 300);
+        }
+      } else {
+        micDot.className = '';
+        micLabel.textContent = 'mic off';
+      }
+    };
+
+    try { recognition.start(); } catch (_) {}
+  }
+
+  function stopListening() {
+    listening = false;
+    if (recognition) try { recognition.stop(); } catch (_) {}
+  }
+
+  // ---------- Stats: live WPM, elapsed timer, estimated total time ----------
+  const wpmVal = $('wpm-val'), timeVal = $('time-val'), estVal = $('est-val');
+  let startTime = null, statsTimer = null;
+
+  function formatClock(totalSeconds) {
+    if (!isFinite(totalSeconds) || totalSeconds < 0) return '--:--';
+    const m = Math.floor(totalSeconds / 60);
+    const s = Math.floor(totalSeconds % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function updateStats() {
+    const elapsed = startTime ? (performance.now() - startTime) / 1000 : 0;
+    timeVal.textContent = formatClock(elapsed);
+    // Wait a few seconds before trusting the rate — early on a couple of
+    // words can swing it wildly.
+    const minutes = elapsed / 60;
+    const wpm = minutes > 0.05 && pos > 0 ? pos / minutes : 0;
+    wpmVal.textContent = wpm > 0 ? Math.round(wpm) : '--';
+    if (wpm > 0 && words.length > 0) {
+      estVal.textContent = '~' + formatClock((words.length / wpm) * 60);
+    } else {
+      estVal.textContent = '~--:--';
+    }
+  }
+
+  function startStatsTimer() {
+    if (startTime !== null) return; // already running — first advance only
+    startTime = performance.now();
+    if (statsTimer) clearInterval(statsTimer);
+    statsTimer = setInterval(updateStats, 250);
+    updateStats();
+  }
+
+  // Called when the reader hits the final word: take one last accurate
+  // reading, then freeze the display by stopping the interval.
+  function finishStatsTimer() {
+    if (statsTimer) updateStats();
+    stopStatsTimer();
+  }
+
+  function stopStatsTimer() {
+    if (statsTimer) { clearInterval(statsTimer); statsTimer = null; }
+  }
+
+  // Back to the pre-speech state: timer isn't running again until the next
+  // autoscroll-triggering word comes in.
+  function resetStats() {
+    stopStatsTimer();
+    startTime = null;
+    wpmVal.textContent = '--';
+    timeVal.textContent = '0:00';
+    estVal.textContent = '~--:--';
+  }
+
+  // ---------- Pause ----------
+  // Space toggles a hard pause: recognition is fully stopped (so anything
+  // said while paused is discarded, not just ignored-but-buffered), the
+  // elapsed/WPM timer freezes, and a blurred "PAUSED" overlay covers the
+  // script until the reader resumes.
+  function togglePause() {
+    paused = !paused;
+    $('prompter').classList.toggle('paused', paused);
+    if (paused) {
+      pausedAt = performance.now();
+      stopStatsTimer();
+      stopListening();
+    } else {
+      // Shift startTime forward by however long we were paused, so the
+      // elapsed clock/WPM don't count the pause as reading time.
+      if (startTime !== null && pausedAt !== null) startTime += performance.now() - pausedAt;
+      pausedAt = null;
+      if (startTime !== null && !statsTimer) {
+        statsTimer = setInterval(updateStats, 250);
+        updateStats();
+      }
+      startListening();
+    }
+  }
+
+  // ---------- UI wiring ----------
+  $('start-btn').addEventListener('click', () => {
+    const text = $('script-input').value.trim();
+    if (!text) { $('script-input').focus(); return; }
+    buildScript(text);
+    pos = 0;
+    if (words[0]) words[0].el.classList.add('current');
+    $('setup').style.display = 'none';
+    $('ad-wing-left').style.display = 'none';
+    $('ad-wing-right').style.display = 'none';
+    $('prompter').style.display = 'block';
+    currentScroll = scrollArea.scrollTop = 0;
+    scheduleScroll();
+    startListening();
+    resetStats(); // timer doesn't start until the first word is actually heard
+    paused = false;
+    pausedAt = null;
+    $('prompter').classList.remove('paused');
+  });
+
+  $('back-btn').addEventListener('click', () => {
+    stopListening();
+    resetStats();
+    paused = false;
+    pausedAt = null;
+    $('prompter').classList.remove('paused');
+    $('prompter').style.display = 'none';
+    $('setup').style.display = 'flex';
+    $('ad-wing-left').style.display = 'flex';
+    $('ad-wing-right').style.display = 'flex';
+  });
+
+  $('restart-btn').addEventListener('click', () => {
+    words.forEach(w => w.el.classList.remove('spoken', 'current'));
+    pos = 0;
+    if (words[0]) words[0].el.classList.add('current');
+    scheduleScroll();
+    resetStats();
+  });
+
+  $('mirror-btn').addEventListener('click', () =>
+    $('prompter').classList.toggle('mirrored'));
+
+  // Slider is 1 (smoothest — slow, gliding catch-up) to 10 (snappiest —
+  // sticks close to the confirmed word). Maps onto the easing fraction
+  // tick() closes each frame.
+  const EASE_MIN = 0.06, EASE_MAX = 0.40;
+  $('ease-slider').addEventListener('input', e => {
+    const v = +e.target.value; // 1..10
+    scrollEase = EASE_MIN + (v - 1) / 9 * (EASE_MAX - EASE_MIN);
+  });
+  scrollEase = EASE_MIN + (+$('ease-slider').value - 1) / 9 * (EASE_MAX - EASE_MIN);
+
+  const setSize = px => {
+    px = Math.max(24, Math.min(120, px));
+    document.documentElement.style.setProperty('--font-size', px + 'px');
+    $('size-slider').value = px;
+    $('size-preview').style.fontSize = px + 'px';
+    scheduleScroll();
+  };
+  $('size-slider').addEventListener('input', e => setSize(+e.target.value));
+  $('bigger-btn').addEventListener('click', () =>
+    setSize(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size')) + 6));
+  $('smaller-btn').addEventListener('click', () =>
+    setSize(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size')) - 6));
+
+  // Manual nudge if recognition ever drifts.
+  document.addEventListener('keydown', (e) => {
+    if ($('prompter').style.display !== 'block') return;
+    if (e.code === 'Space') { e.preventDefault(); togglePause(); return; }
+    if (e.key === 'Escape') { $('back-btn').click(); return; }
+    if (paused) return; // no manual nudging while paused either
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { setPos(pos + 3); scheduleScroll(); }
+    if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  { setPos(pos - 3); scheduleScroll(); }
+  });
+
+  window.addEventListener('resize', scheduleScroll);
+
+  // Demo text so it's testable immediately.
+  $('script-input').value =
+`Welcome to the automatic voice teleprompter. As you read these words out loud, the screen scrolls automatically to keep pace with your voice.
+
+It's as simple as that! Speak quickly and it keeps up, or slow down for emphasis and it waits for you. Feel free to pause completely. You can take a breath or answer a question, and your position will hold until you continue.
+
+You can press escape to exit, space bar to pause and resume, and place text in asterisks to display notes on screen. *like this!* You can also tap the arrow keys to nudge the position by hand.
+
+If the recognition ever misses a word or two, don't worry. It looks ahead in the script and recovers as soon as it hears you again.
+
+That's all there is to it. Replace this text with your own script, press start, and just speak naturally!`;
+})();
+</script>
+</body>
+</html>
