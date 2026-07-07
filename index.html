@@ -708,7 +708,8 @@ That's all there is to it. Replace this text with your own script, press start, 
 
   function hideIfForeign(el) {
     if (!el || el.nodeType !== 1) return; // elements only
-    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+    const tag = el.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'HTML' || tag === 'HEAD' || tag === 'BODY') return;
     if (isOurs(el)) return;
     el.style.setProperty('display', 'none', 'important');
   }
