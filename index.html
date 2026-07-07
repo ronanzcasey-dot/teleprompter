@@ -602,6 +602,7 @@
     buildScript(text);
     pos = 0;
     if (words[0]) words[0].el.classList.add('current');
+    prompting = true;
     removeAd();
     document.body.classList.add('is-prompting');
     $('setup').style.display = 'none';
@@ -624,6 +625,7 @@
     $('prompter').style.display = 'none';
     $('setup').style.display = 'flex';
     document.body.classList.remove('is-prompting');
+    prompting = false;
     loadAd();
   });
 
@@ -687,10 +689,37 @@ That's all there is to it. Replace this text with your own script, press start, 
   // ---------- Ads (setup screen only) ----------
   // Monetag's In-Page Push tag self-injects its own ad element into the
   // page rather than filling a container we control, so to keep ads off
-  // the actual prompting screen we only load the tag while on setup, and
-  // strip out whatever it added to <body> the moment Start is clicked.
+  // the actual prompting screen we only load the tag while on setup. Its
+  // ad elements can show up nested anywhere in the document (not just as
+  // direct children of <body>), and it re-injects on its own timer, so a
+  // one-time/shallow removal doesn't stick — a MutationObserver watching
+  // the whole subtree in real time is the only reliable way to catch and
+  // hide whatever it adds for as long as we're actively prompting.
   const AD_ZONE = '11254160';
   let adScriptEl = null;
+  let prompting = false;
+
+  function isOurs(el) {
+    return el === document.getElementById('setup') ||
+           el === document.getElementById('prompter') ||
+           el.id === 'setup' || el.id === 'prompter' ||
+           !!el.closest('#setup, #prompter');
+  }
+
+  function hideIfForeign(el) {
+    if (el.nodeType !== 1) return; // elements only
+    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+    if (isOurs(el)) return;
+    el.style.setProperty('display', 'none', 'important');
+  }
+
+  const adObserver = new MutationObserver(mutations => {
+    if (!prompting) return;
+    for (const m of mutations) {
+      m.addedNodes.forEach(hideIfForeign);
+    }
+  });
+  adObserver.observe(document.documentElement, { childList: true, subtree: true });
 
   function loadAd() {
     if (adScriptEl) return; // already loaded
@@ -702,10 +731,11 @@ That's all there is to it. Replace this text with your own script, press start, 
 
   function removeAd() {
     // Remove the tag itself plus any sibling elements it appended to
-    // <body> (its ad units), leaving only our own #setup/#prompter.
+    // <body> (its ad units), leaving only our own #setup/#prompter. The
+    // MutationObserver above catches anything it re-adds afterward.
     if (adScriptEl) { adScriptEl.remove(); adScriptEl = null; }
     Array.from(document.body.children).forEach(el => {
-      if (el.id !== 'setup' && el.id !== 'prompter') el.remove();
+      if (!isOurs(el)) el.remove();
     });
   }
 
