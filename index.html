@@ -75,6 +75,12 @@
     border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.5;
   }
 
+  /* Monetag's ad script re-injects its own elements on a timer, so a
+     one-time JS removal doesn't stick. This CSS rule keeps hiding
+     anything it (re)adds outside our own containers for as long as
+     we're actively prompting, regardless of when it reappears. */
+  body.is-prompting > *:not(#setup):not(#prompter) { display: none !important; }
+
   /* ---------- Prompter screen ---------- */
   #prompter { display: none; height: 100%; overflow: hidden; position: relative; }
   #prompter.mirrored #scroll-area { transform: scaleX(-1); }
@@ -597,6 +603,7 @@
     pos = 0;
     if (words[0]) words[0].el.classList.add('current');
     removeAd();
+    document.body.classList.add('is-prompting');
     $('setup').style.display = 'none';
     $('prompter').style.display = 'block';
     currentScroll = scrollArea.scrollTop = 0;
@@ -616,6 +623,7 @@
     $('prompter').classList.remove('paused');
     $('prompter').style.display = 'none';
     $('setup').style.display = 'flex';
+    document.body.classList.remove('is-prompting');
     loadAd();
   });
 
