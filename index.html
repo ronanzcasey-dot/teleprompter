@@ -75,10 +75,8 @@
     border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.5;
   }
 
-  /* Monetag's ad script re-injects its own elements on a timer, so a
-     one-time JS removal doesn't stick. This CSS rule keeps hiding
-     anything it (re)adds outside our own containers for as long as
-     we're actively prompting, regardless of when it reappears. */
+  /* Hides any body-level element outside our own containers (e.g. the ad
+     rail) for as long as we're actively prompting. */
   body.is-prompting > *:not(#setup):not(#prompter) { display: none !important; }
 
   /* Adsterra banner rail: fixed to the right edge, only room for it once
@@ -625,8 +623,6 @@
     buildScript(text);
     pos = 0;
     if (words[0]) words[0].el.classList.add('current');
-    prompting = true;
-    removeAd();
     document.body.classList.add('is-prompting');
     $('setup').style.display = 'none';
     $('prompter').style.display = 'block';
@@ -648,8 +644,6 @@
     $('prompter').style.display = 'none';
     $('setup').style.display = 'flex';
     document.body.classList.remove('is-prompting');
-    prompting = false;
-    loadAd();
   });
 
   $('restart-btn').addEventListener('click', () => {
@@ -709,84 +703,6 @@ You can press escape to exit, space bar to pause and resume, and place text in p
 If the recognition ever misses a word or two, don't worry. It looks ahead in the script and recovers as soon as it hears you again.
 
 That's all there is to it. Replace this text with your own script, press start, and just speak naturally!`;
-  // ---------- Ads (setup screen only) ----------
-  // Monetag's In-Page Push tag self-injects its own ad element into the
-  // page rather than filling a container we control, so to keep ads off
-  // the actual prompting screen we only load the tag while on setup. Its
-  // ad elements can show up nested anywhere in the document (not just as
-  // direct children of <body>), and it re-injects on its own timer, so a
-  // one-time/shallow removal doesn't stick — a MutationObserver watching
-  // the whole subtree in real time is the only reliable way to catch and
-  // hide whatever it adds for as long as we're actively prompting.
-  const AD_ZONES = ['11254160'];
-  let adScriptEls = [];
-  let prompting = false;
-
-  function isOurs(el) {
-    return el === document.getElementById('setup') ||
-           el === document.getElementById('prompter') ||
-           el.id === 'setup' || el.id === 'prompter' ||
-           el.id === 'ad-rail-right' ||
-           !!el.closest('#setup, #prompter, #ad-rail-right');
-  }
-
-  function hideIfForeign(el) {
-    if (!el || el.nodeType !== 1) return; // elements only
-    const tag = el.tagName;
-    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'HTML' || tag === 'HEAD' || tag === 'BODY') return;
-    if (isOurs(el)) return;
-    el.style.setProperty('display', 'none', 'important');
-  }
-
-  // Sweep every direct child of <body> (and <html>, in case it attaches
-  // there) that isn't ours. Some ad scripts pre-create their elements
-  // early and merely toggle visibility/attributes later rather than
-  // adding brand-new nodes, which a childList-only observer would miss —
-  // so this runs on a timer too, not just on mutation events.
-  function sweepForeignElements() {
-    if (!prompting) return;
-    Array.from(document.body.children).forEach(hideIfForeign);
-    Array.from(document.documentElement.children).forEach(el => {
-      if (el.tagName !== 'HEAD' && el.tagName !== 'BODY') hideIfForeign(el);
-    });
-  }
-
-  const adObserver = new MutationObserver(mutations => {
-    if (!prompting) return;
-    for (const m of mutations) {
-      m.addedNodes.forEach(hideIfForeign);
-      if (m.type === 'attributes' && m.target) hideIfForeign(m.target);
-    }
-  });
-  adObserver.observe(document.documentElement, {
-    childList: true, subtree: true, attributes: true,
-    attributeFilter: ['style', 'class', 'hidden']
-  });
-  setInterval(sweepForeignElements, 250);
-
-  function loadAd() {
-    if (adScriptEls.length) return; // already loaded
-    adScriptEls = AD_ZONES.map(zone => {
-      const el = document.createElement('script');
-      el.dataset.zone = zone;
-      el.src = 'https://nap5k.com/tag.min.js';
-      document.body.appendChild(el);
-      return el;
-    });
-  }
-
-  function removeAd() {
-    // Remove the tags themselves plus any sibling elements they appended to
-    // <body> (their ad units), leaving only our own #setup/#prompter. The
-    // MutationObserver above catches anything it re-adds afterward.
-    adScriptEls.forEach(el => el.remove());
-    adScriptEls = [];
-    Array.from(document.body.children).forEach(el => {
-      if (!isOurs(el)) el.remove();
-    });
-  }
-
-  loadAd();
 })();
 </script>
 </body>
