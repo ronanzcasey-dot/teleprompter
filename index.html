@@ -81,6 +81,16 @@
      we're actively prompting, regardless of when it reappears. */
   body.is-prompting > *:not(#setup):not(#prompter) { display: none !important; }
 
+  /* Adsterra banner rail: fixed to the right edge, only room for it once
+     the viewport is wide enough to clear #setup's centered 760px column.
+     It's a direct child of <body> outside #setup/#prompter, so the rule
+     above already hides it automatically once prompting starts. */
+  #ad-rail-right {
+    position: fixed; top: 50%; right: 20px; transform: translateY(-50%);
+    width: 300px; height: 250px; z-index: 1;
+  }
+  @media (max-width: 1240px) { #ad-rail-right { display: none; } }
+
   /* ---------- Prompter screen ---------- */
   #prompter { display: none; height: 100%; overflow: hidden; position: relative; }
   #prompter.mirrored #scroll-area { transform: scaleX(-1); }
@@ -223,6 +233,19 @@
   </div>
   <div id="heard"></div>
   <div id="pause-overlay">PAUSED</div>
+</div>
+
+<div id="ad-rail-right">
+  <script>
+    atOptions = {
+      'key' : '5bdb1e4617f5fe9b80ed580927046933',
+      'format' : 'iframe',
+      'height' : 250,
+      'width' : 300,
+      'params' : {}
+    };
+  </script>
+  <script src="https://www.highperformanceformat.com/5bdb1e4617f5fe9b80ed580927046933/invoke.js"></script>
 </div>
 
 <script>
@@ -703,7 +726,8 @@ That's all there is to it. Replace this text with your own script, press start, 
     return el === document.getElementById('setup') ||
            el === document.getElementById('prompter') ||
            el.id === 'setup' || el.id === 'prompter' ||
-           !!el.closest('#setup, #prompter');
+           el.id === 'ad-rail-right' ||
+           !!el.closest('#setup, #prompter, #ad-rail-right');
   }
 
   function hideIfForeign(el) {
