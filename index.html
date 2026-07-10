@@ -257,14 +257,14 @@
       if (!para.trim()) continue;
       const p = document.createElement('p');
       p.style.marginBottom = '0.8em';
-      // Split into alternating spoken text and *note* segments — text
-      // wrapped in asterisks is a stage direction (e.g. "*gesture to the
-      // slides*"): shown for the reader but never expected to be spoken,
+      // Split into alternating spoken text and (note) segments — text
+      // wrapped in parentheses is a stage direction (e.g. "(gesture to the
+      // slides)"): shown for the reader but never expected to be spoken,
       // so it's excluded from the word-tracking array entirely.
-      const segments = para.split(/(\*[^*]+\*)/g);
+      const segments = para.split(/(\([^)]+\))/g);
       for (const seg of segments) {
         if (!seg) continue;
-        const noteMatch = seg.match(/^\*([^*]+)\*$/);
+        const noteMatch = seg.match(/^\(([^)]+)\)$/);
         if (noteMatch) {
           const note = document.createElement('span');
           note.className = 'note';
@@ -681,7 +681,7 @@
 
 It's as simple as that! Speak quickly and it keeps up, or slow down for emphasis and it waits for you. Feel free to pause completely. You can take a breath or answer a question, and your position will hold until you continue.
 
-You can press escape to exit, space bar to pause and resume, and place text in asterisks to display notes on screen. *like this!* You can also tap the arrow keys to nudge the position by hand.
+You can press escape to exit, space bar to pause and resume, and place text in parentheses to display notes on screen. (like this!) You can also tap the arrow keys to nudge the position by hand.
 
 If the recognition ever misses a word or two, don't worry. It looks ahead in the script and recovers as soon as it hears you again.
 
