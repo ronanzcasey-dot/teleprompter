@@ -83,11 +83,20 @@
      the viewport is wide enough to clear #setup's centered 760px column.
      It's a direct child of <body> outside #setup/#prompter, so the rule
      above already hides it automatically once prompting starts. */
-  #ad-rail-right {
-    position: fixed; top: 50%; right: 20px; transform: translateY(-50%);
-    width: 300px; height: 250px; z-index: 1;
+  #ad-rail-right, #ad-rail-left {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 16px; z-index: 1;
   }
-  @media (max-width: 1240px) { #ad-rail-right { display: none; } }
+  #ad-rail-right { right: 20px; align-items: flex-end; }
+  #ad-rail-left { left: 20px; align-items: flex-start; }
+  @media (max-width: 1440px) { #ad-rail-right, #ad-rail-left { display: none; } }
+
+  /* Fallback for viewports too narrow for the side rails. */
+  #ad-mobile-banner {
+    display: none; position: fixed; bottom: 12px; left: 0; right: 0;
+    justify-content: center; z-index: 1;
+  }
+  @media (max-width: 1440px) { #ad-mobile-banner { display: flex; } }
 
   /* ---------- Prompter screen ---------- */
   #prompter { display: none; height: 100%; overflow: hidden; position: relative; }
@@ -234,16 +243,58 @@
 </div>
 
 <div id="ad-rail-right">
+  <div>
+    <script>
+      atOptions = {
+        'key' : '5bdb1e4617f5fe9b80ed580927046933',
+        'format' : 'iframe',
+        'height' : 250,
+        'width' : 300,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/5bdb1e4617f5fe9b80ed580927046933/invoke.js"></script>
+  </div>
+  <div>
+    <script>
+      atOptions = {
+        'key' : 'f88a7e4efb6ab4cf85c753416a41cb96',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/f88a7e4efb6ab4cf85c753416a41cb96/invoke.js"></script>
+  </div>
+</div>
+
+<div id="ad-rail-left">
+  <div>
+    <script>
+      atOptions = {
+        'key' : 'fb26c1569226e311c783e1b7e9e3e86e',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/fb26c1569226e311c783e1b7e9e3e86e/invoke.js"></script>
+  </div>
+</div>
+
+<div id="ad-mobile-banner">
   <script>
     atOptions = {
-      'key' : '5bdb1e4617f5fe9b80ed580927046933',
+      'key' : '42a2ef02c7a927392e6c904fd1f033ba',
       'format' : 'iframe',
-      'height' : 250,
-      'width' : 300,
+      'height' : 50,
+      'width' : 320,
       'params' : {}
     };
   </script>
-  <script src="https://www.highperformanceformat.com/5bdb1e4617f5fe9b80ed580927046933/invoke.js"></script>
+  <script src="https://www.highperformanceformat.com/42a2ef02c7a927392e6c904fd1f033ba/invoke.js"></script>
 </div>
 
 <script>
