@@ -695,8 +695,8 @@ That's all there is to it. Replace this text with your own script, press start, 
   // one-time/shallow removal doesn't stick — a MutationObserver watching
   // the whole subtree in real time is the only reliable way to catch and
   // hide whatever it adds for as long as we're actively prompting.
-  const AD_ZONE = '11254160';
-  let adScriptEl = null;
+  const AD_ZONES = ['11254160', '11267319'];
+  let adScriptEls = [];
   let prompting = false;
 
   function isOurs(el) {
@@ -741,18 +741,22 @@ That's all there is to it. Replace this text with your own script, press start, 
   setInterval(sweepForeignElements, 250);
 
   function loadAd() {
-    if (adScriptEl) return; // already loaded
-    adScriptEl = document.createElement('script');
-    adScriptEl.dataset.zone = AD_ZONE;
-    adScriptEl.src = 'https://nap5k.com/tag.min.js';
-    document.body.appendChild(adScriptEl);
+    if (adScriptEls.length) return; // already loaded
+    adScriptEls = AD_ZONES.map(zone => {
+      const el = document.createElement('script');
+      el.dataset.zone = zone;
+      el.src = 'https://nap5k.com/tag.min.js';
+      document.body.appendChild(el);
+      return el;
+    });
   }
 
   function removeAd() {
-    // Remove the tag itself plus any sibling elements it appended to
-    // <body> (its ad units), leaving only our own #setup/#prompter. The
+    // Remove the tags themselves plus any sibling elements they appended to
+    // <body> (their ad units), leaving only our own #setup/#prompter. The
     // MutationObserver above catches anything it re-adds afterward.
-    if (adScriptEl) { adScriptEl.remove(); adScriptEl = null; }
+    adScriptEls.forEach(el => el.remove());
+    adScriptEls = [];
     Array.from(document.body.children).forEach(el => {
       if (!isOurs(el)) el.remove();
     });
