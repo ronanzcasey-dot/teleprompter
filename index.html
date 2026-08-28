@@ -23,6 +23,70 @@
 <meta name="twitter:description" content="Paste your script, hit start, and speak. It listens and scrolls itself — free, no signup, runs right in your browser.">
 <meta name="twitter:image" content="https://autoteleprompter.netlify.app/og-image.png">
 
+<meta name="keywords" content="teleprompter, free teleprompter, online teleprompter, voice teleprompter, voice-controlled teleprompter, automatic teleprompter, browser teleprompter, teleprompter app, teleprompter for youtube, teleprompter for video, speech teleprompter, no download teleprompter">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="autoteleprompter">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Free Online Teleprompter",
+  "url": "https://autoteleprompter.netlify.app/",
+  "description": "A free, voice-controlled teleprompter that runs in your browser. Paste a script, press start, and it scrolls automatically as you speak. No download, no signup.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires a modern browser with the Web Speech API (Chrome, Edge, or Safari recommended)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Voice-controlled auto-scrolling",
+    "Adjustable text size",
+    "Mirror mode for beam-splitter rigs",
+    "Live words-per-minute and elapsed time",
+    "On-screen notes from parenthetical stage directions",
+    "Keyboard nudging and pause/resume"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is this teleprompter really free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is completely free with no signup, no account, and no watermark. It runs entirely in your browser." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to download or install anything?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. It is a website. Open the page, paste your script, and press start. Nothing is installed." }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the voice control work?",
+      "acceptedAnswer": { "@type": "Answer", "text": "It uses your browser's built-in speech recognition to follow along with the words you say and scroll the script to match your pace. If you speed up it keeps up; if you pause it waits." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which browsers are supported?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Chrome and Edge work best. Safari also works. The voice tracking needs the Web Speech API, which some browsers do not support." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it record me or send my script anywhere?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Your script stays in your browser. Speech recognition is handled by the browser itself. Nothing is stored on a server." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use it on a phone or tablet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, on mobile browsers that support speech recognition. A larger screen and an external mic give the most reliable tracking." }
+    }
+  ]
+}
+</script>
+
 <script data-goatcounter="https://autoteleprompter.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <style>
@@ -215,6 +279,20 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   #prompter.paused #pause-overlay { display: flex; }
+
+  /* ---------- SEO / info content (below the fold, hidden while prompting) ---------- */
+  #about {
+    max-width: 760px; margin: 0 auto; padding: 8px 24px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #b8b8b8; line-height: 1.65;
+  }
+  #about h2 { color: #eee; font-size: 20px; font-weight: 600; margin: 36px 0 12px; letter-spacing: -0.3px; }
+  #about h3 { color: #ddd; font-size: 15px; font-weight: 600; margin: 20px 0 4px; }
+  #about p { font-size: 15px; margin-bottom: 12px; }
+  #about ol, #about ul { margin: 0 0 12px 20px; font-size: 15px; }
+  #about li { margin-bottom: 6px; }
+  #about a { color: #9db8ff; }
+  #about .faq h3 { margin-top: 18px; }
 </style>
 </head>
 <body>
@@ -237,6 +315,68 @@
     <button id="start-btn">▶&nbsp; Start prompting</button>
   </div>
 </div>
+
+<section id="about">
+  <h2>A free voice-controlled teleprompter that runs in your browser</h2>
+  <p>
+    This is a free online teleprompter for anyone who records video, gives talks, or
+    presents on camera. Paste your script, press start, and the text scrolls itself,
+    following along with your voice so the line you are reading stays in front of the
+    lens. There is no download, no signup, and no watermark. It works on desktop and
+    on mobile browsers that support speech recognition, and it runs well in Chrome,
+    Edge, and Safari.
+  </p>
+
+  <h3>How it works</h3>
+  <ol>
+    <li>Paste or type your script into the box above.</li>
+    <li>Set the text size so it is comfortable to read from where your camera sits.</li>
+    <li>Press <strong>Start prompting</strong> and allow microphone access.</li>
+    <li>Start talking. The script scrolls to match your pace, waits when you pause, and
+      catches up when you skip ahead. Arrow keys nudge the position by hand, and the
+      space bar pauses.</li>
+  </ol>
+
+  <h3>Who it is for</h3>
+  <ul>
+    <li><strong>YouTubers and video creators</strong> who want to sound natural without memorising a script.</li>
+    <li><strong>Podcasters</strong> reading intros, ad reads, or scripted segments.</li>
+    <li><strong>Public speakers</strong> rehearsing a keynote or wedding speech.</li>
+    <li><strong>Course creators and educators</strong> recording lessons and tutorials.</li>
+    <li><strong>Anyone on a video call</strong> who needs to deliver prepared remarks.</li>
+  </ul>
+
+  <h3>Why use this instead of a teleprompter app</h3>
+  <p>
+    Most teleprompter tools either cost money, require an install, add a watermark, or
+    scroll at a fixed speed you have to fight against. This one is free, opens instantly
+    in a browser, keeps your script on your own device, and paces itself from your
+    actual speech instead of a timer. Turn on mirror mode if you use a beam-splitter
+    teleprompter rig.
+  </p>
+
+  <div class="faq">
+    <h2>Frequently asked questions</h2>
+
+    <h3>Is this teleprompter really free?</h3>
+    <p>Yes. It is completely free with no signup, no account, and no watermark. It runs entirely in your browser.</p>
+
+    <h3>Do I need to download or install anything?</h3>
+    <p>No. It is a website. Open the page, paste your script, and press start. Nothing is installed.</p>
+
+    <h3>How does the voice control work?</h3>
+    <p>It uses your browser's built-in speech recognition to follow the words you say and scroll the script to match your pace. If you speed up it keeps up; if you pause it waits.</p>
+
+    <h3>Which browsers are supported?</h3>
+    <p>Chrome and Edge work best. Safari also works. The voice tracking needs the Web Speech API, which some browsers do not support.</p>
+
+    <h3>Does it record me or send my script anywhere?</h3>
+    <p>Your script stays in your browser and speech recognition is handled by the browser itself. Nothing is stored on a server.</p>
+
+    <h3>Can I use it on a phone or tablet?</h3>
+    <p>Yes, on mobile browsers that support speech recognition. A larger screen and an external mic give the most reliable tracking.</p>
+  </div>
+</section>
 
 <div id="ph-badge" style="position: fixed; top: 16px; left: 16px; z-index: 5;">
   <a href="https://www.producthunt.com/products/free-online-automatic-teleprompter?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-free-online-automatic-teleprompter" target="_blank" rel="noopener noreferrer"><img alt="Free Online Automatic Teleprompter - Free, voice-controlled teleprompter. No download, no signup. | Product Hunt" width="200" height="43" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1225578&theme=light&t=1787033122881"></a>
