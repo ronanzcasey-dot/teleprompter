@@ -3,35 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Online Teleprompter – No Download, Voice-Controlled</title>
-<meta name="description" content="A free voice-controlled teleprompter that runs right in your browser. Paste your script, hit start, and it scrolls automatically as you speak — no download or signup needed.">
+<title>SpeechScroller – Free Teleprompter That Scrolls With Your Voice</title>
+<meta name="description" content="SpeechScroller is a free teleprompter that scrolls with your voice. Paste your script, press start, and read out loud. It follows along as you speak, right in your browser. No download, no signup.">
 <link rel="canonical" href="https://speechscroller.com/">
 <meta name="theme-color" content="#000000">
-<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://speechscroller.com/">
-<meta property="og:title" content="Free Online Teleprompter – No Download, Voice-Controlled">
-<meta property="og:description" content="Paste your script, hit start, and speak. It listens and scrolls itself — free, no signup, runs right in your browser.">
+<meta property="og:site_name" content="SpeechScroller">
+<meta property="og:title" content="SpeechScroller – The teleprompter that scrolls with your voice">
+<meta property="og:description" content="Paste your script, hit start, and speak. It listens and scrolls with your voice. Free, no signup, runs in your browser.">
 <meta property="og:image" content="https://speechscroller.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Free Online Teleprompter – No Download, Voice-Controlled">
-<meta name="twitter:description" content="Paste your script, hit start, and speak. It listens and scrolls itself — free, no signup, runs right in your browser.">
+<meta name="twitter:title" content="SpeechScroller – The teleprompter that scrolls with your voice">
+<meta name="twitter:description" content="Paste your script, hit start, and speak. It listens and scrolls with your voice. Free, no signup, runs in your browser.">
 <meta name="twitter:image" content="https://speechscroller.com/og-image.png">
 
 <meta name="keywords" content="teleprompter, free teleprompter, online teleprompter, voice teleprompter, voice-controlled teleprompter, automatic teleprompter, browser teleprompter, teleprompter app, teleprompter for youtube, teleprompter for video, speech teleprompter, no download teleprompter">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="author" content="autoteleprompter">
+<meta name="author" content="SpeechScroller">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Free Online Teleprompter",
+  "name": "SpeechScroller",
+  "alternateName": "SpeechScroller Teleprompter",
   "url": "https://speechscroller.com/",
   "description": "A free, voice-controlled teleprompter that runs in your browser. Paste a script, press start, and it scrolls automatically as you speak. No download, no signup.",
   "applicationCategory": "MultimediaApplication",
@@ -55,7 +58,7 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is this teleprompter really free?",
+      "name": "Is SpeechScroller really free?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is completely free with no signup, no account, and no watermark. It runs entirely in your browser." }
     },
     {
@@ -101,17 +104,138 @@
 
   /* ---------- Setup screen ---------- */
   #setup {
-    max-width: 760px; margin: 0 auto; padding: 48px 24px;
-    display: flex; flex-direction: column; gap: 20px; height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --green: #3ddc68;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --serif: 'Times New Roman', Georgia, serif;
+    max-width: 960px; margin: 0 auto; padding: 22px 24px 40px;
+    display: flex; flex-direction: column; gap: 20px; min-height: 100%;
+    font-family: var(--sans);
   }
-  #setup h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
-  #setup p.hint { color: #888; font-size: 14px; line-height: 1.5; }
+
+  /* Top bar: wordmark + Product Hunt badge */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--serif); font-size: 24px; font-weight: 500;
+    color: #fff; text-decoration: none; letter-spacing: -0.3px;
+  }
+  .brand .mark { width: 26px; height: 26px; flex-shrink: 0; }
+  .brand .dim { color: #8a8a8a; }
+  .topbar .ph img { display: block; height: 38px; width: auto; }
+
+  /* Hero: headline on the left, live demo on the right */
+  .hero {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px;
+    align-items: center; padding: 34px 0 14px;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  #setup h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(38px, 5.4vw, 58px); line-height: 1.04; letter-spacing: -1px;
+  }
+  #setup h1 .dim { color: #666; }
+  .lede { color: #a8a8a8; font-size: 17px; line-height: 1.55; margin-top: 18px; max-width: 30em; }
+  .perks {
+    display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px;
+    list-style: none; color: #8a8a8a; font-size: 14px;
+  }
+  .perks li { display: inline-flex; align-items: center; gap: 7px; }
+  .perks li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+  /* Demo card: a tiny prompter that reads itself */
+  .demo {
+    position: relative; background: #070707; border: 1px solid #222;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 30px 80px -30px rgba(61, 220, 104, 0.18);
+  }
+  .demo-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid #1a1a1a;
+    font-size: 12px; color: #777;
+  }
+  .demo-bar .listen { display: inline-flex; align-items: center; gap: 8px; }
+  .demo-bar .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 8px var(--green); animation: pulse 1.4s infinite;
+  }
+  .wave { display: inline-flex; align-items: center; gap: 3px; height: 16px; }
+  .wave i {
+    display: block; width: 3px; height: 4px; border-radius: 2px; background: var(--green);
+    transition: height 0.12s ease;
+  }
+  .demo-view { position: relative; height: 210px; overflow: hidden; }
+  .demo-view::before, .demo-view::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 34px; z-index: 2; pointer-events: none;
+  }
+  .demo-view::before { top: 0; background: linear-gradient(#070707, rgba(7,7,7,0)); }
+  .demo-view::after { bottom: 0; background: linear-gradient(rgba(7,7,7,0), #070707); }
+  .demo-guide {
+    position: absolute; left: 0; right: 0; top: 86px; height: 0; z-index: 3;
+    border-top: 1px solid rgba(255,255,255,0.10);
+  }
+  .demo-guide::before {
+    content: ''; position: absolute; left: 10px; top: -6px;
+    border: 6px solid transparent; border-left-color: rgba(255,255,255,0.5);
+  }
+  .demo-text {
+    padding: 56px 28px 120px 34px;
+    font-family: var(--serif); font-size: 26px; line-height: 1.45; font-weight: 500;
+    color: #d8d8d8; transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+  }
+  .demo-text span { transition: color 0.2s; }
+  .demo-text span.spoken { color: #4a4a4a; }
+  .demo-text span.current { color: #fff; }
+  .demo-caption {
+    padding: 11px 16px; border-top: 1px solid #1a1a1a;
+    font-size: 13px; color: #8a8a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .demo-caption b { color: #ccc; font-weight: 500; }
+
+  /* Three steps */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    list-style: none; counter-reset: step;
+  }
+  .steps li {
+    counter-increment: step; background: #0b0b0b; border: 1px solid #1c1c1c;
+    border-radius: 12px; padding: 14px 16px; color: #8a8a8a; font-size: 14px; line-height: 1.45;
+  }
+  .steps li::before {
+    content: counter(step); display: inline-grid; place-items: center;
+    width: 22px; height: 22px; border-radius: 50%; margin-right: 8px;
+    background: #1a1a1a; color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .steps li b { color: #eee; font-weight: 600; }
+
+  /* Script editor card */
+  .editor {
+    display: flex; flex-direction: column; gap: 14px;
+    background: #0b0b0b; border: 1px solid #1f1f1f; border-radius: 16px; padding: 18px;
+  }
+  .editor-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .editor-head h2 { font-size: 15px; font-weight: 600; color: #eee; }
+  #setup p.hint { color: #777; font-size: 13px; line-height: 1.5; }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 22px; }
+    .steps { grid-template-columns: 1fr; }
+    .topbar .ph img { height: 32px; }
+    .demo-text { font-size: 22px; }
+  }
+  @media (max-width: 420px) {
+    #setup { padding-left: 16px; padding-right: 16px; }
+    .brand { font-size: 21px; }
+    .topbar .ph { display: none; }
+  }
 
   /* script-wrap now lays the textarea and the size-preview side by side */
-  #script-wrap { flex: 1; min-height: 260px; display: flex; gap: 16px; }
+  #script-wrap { min-height: 300px; display: flex; gap: 16px; }
   #script-input {
-    flex: 1; background: #111; color: #eee; border: 1px solid #2a2a2a;
+    flex: 1; min-width: 0; background: #111; color: #eee; border: 1px solid #2a2a2a;
     border-radius: 10px; padding: 18px; font-size: 17px; line-height: 1.6;
     font-family: inherit; resize: none; outline: none;
   }
@@ -155,6 +279,23 @@
     padding: 16px 32px; font-size: 17px; font-weight: 600; cursor: pointer;
   }
   #start-btn:hover { background: #ddd; }
+  .setup-row { justify-content: space-between; }
+  #start-btn { display: inline-flex; align-items: center; gap: 10px; }
+  #start-btn .mic {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+  @media (max-width: 520px) {
+    .setup-row { flex-direction: column; align-items: stretch; }
+    .setup-row label { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    input[type="range"] { width: auto; flex: 1; }
+    #start-btn { justify-content: center; }
+    #size-preview { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .demo-text, .demo-text span, .wave i { transition: none; }
+    .demo-bar .dot { animation: none; }
+  }
   #compat-warning {
     display: none; background: #3a1a1a; border: 1px solid #7a3a3a; color: #f0b0b0;
     border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 1.5;
@@ -298,28 +439,78 @@
 <body>
 
 <div id="setup">
-  <h1>Free Online Teleprompter That Scrolls With Your Voice</h1>
-  <p class="hint">Paste your script below, hit Start, and  speak. The prompter listens and scrolls
-  to wherever you are. Works best in Chrome or Edge.
-  Arrow keys nudge the position manually if it ever loses you.</p>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="SpeechScroller home">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#111" stroke="#2a2a2a"/>
+        <rect x="7" y="9" width="12" height="2.8" rx="1.4" fill="#4a4a4a"/>
+        <rect x="7" y="14.6" width="18" height="2.8" rx="1.4" fill="#fff"/>
+        <rect x="7" y="20.2" width="14" height="2.8" rx="1.4" fill="#8a8a8a"/>
+        <circle cx="24.5" cy="10.4" r="2.6" fill="#3ddc68"/>
+      </svg>
+      <span>Speech<span class="dim">Scroller</span></span>
+    </a>
+    <a class="ph" href="https://www.producthunt.com/products/free-online-automatic-teleprompter?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-speechscroller" target="_blank" rel="noopener noreferrer"><img alt="SpeechScroller on Product Hunt" width="200" height="43" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1225578&theme=dark"></a>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Voice-controlled teleprompter</div>
+      <h1>The teleprompter that <span class="dim">scrolls with</span> your voice.</h1>
+      <p class="lede">Paste your script, press start, and read out loud. SpeechScroller listens
+        and keeps your place as you talk. It waits when you pause and catches up if you skip ahead.</p>
+      <ul class="perks">
+        <li>Free</li>
+        <li>No signup</li>
+        <li>No download</li>
+        <li>Runs in your browser</li>
+      </ul>
+    </div>
+
+    <div class="demo" aria-label="Example: the script scrolls as words are spoken">
+      <div class="demo-bar">
+        <span class="listen"><span class="dot"></span><span id="demo-state">Listening</span></span>
+        <span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+      <div class="demo-view">
+        <div class="demo-guide"></div>
+        <div class="demo-text" id="demo-text"></div>
+      </div>
+      <div class="demo-caption">Heard: <b id="demo-heard">…</b></div>
+    </div>
+  </section>
+
+  <ol class="steps">
+    <li><b>Paste your script</b> into the box below.</li>
+    <li><b>Press start</b> and allow the microphone.</li>
+    <li><b>Just talk.</b> The text scrolls with your voice.</li>
+  </ol>
+
   <div id="compat-warning">
     This browser doesn't support the Web Speech API, so voice tracking won't work.
     Please use Chrome, Edge, or Safari.
   </div>
-  <div id="script-wrap">
-    <textarea id="script-input" placeholder="Paste your script here..."></textarea>
-    <span id="size-preview" aria-hidden="true">A</span>
-  </div>
-  <div class="setup-row">
-    <label>Text size <input type="range" id="size-slider" min="24" max="120" value="52"></label>
-    <button id="start-btn">▶&nbsp; Start prompting</button>
+
+  <div class="editor">
+    <div class="editor-head">
+      <h2>Your script</h2>
+      <p class="hint">Works best in Chrome or Edge. Arrow keys nudge the position, space pauses.</p>
+    </div>
+    <div id="script-wrap">
+      <textarea id="script-input" placeholder="Paste your script here..." aria-label="Your script"></textarea>
+      <span id="size-preview" aria-hidden="true">A</span>
+    </div>
+    <div class="setup-row">
+      <label>Text size <input type="range" id="size-slider" min="24" max="120" value="52"></label>
+      <button id="start-btn"><span class="mic" aria-hidden="true"></span>Start prompting</button>
+    </div>
   </div>
 </div>
 
 <section id="about">
   <h2>A free voice-controlled teleprompter that runs in your browser</h2>
   <p>
-    This is a free online teleprompter for anyone who records video, gives talks, or
+    SpeechScroller is a free online teleprompter for anyone who records video, gives talks, or
     presents on camera. Paste your script, press start, and the text scrolls itself,
     following along with your voice so the line you are reading stays in front of the
     lens. There is no download, no signup, and no watermark. It works on desktop and
@@ -346,10 +537,10 @@
     <li><strong>Anyone on a video call</strong> who needs to deliver prepared remarks.</li>
   </ul>
 
-  <h3>Why use this instead of a teleprompter app</h3>
+  <h3>Why use SpeechScroller instead of a teleprompter app</h3>
   <p>
     Most teleprompter tools either cost money, require an install, add a watermark, or
-    scroll at a fixed speed you have to fight against. This one is free, opens instantly
+    scroll at a fixed speed you have to fight against. SpeechScroller is free, opens instantly
     in a browser, keeps your script on your own device, and paces itself from your
     actual speech instead of a timer. Turn on mirror mode if you use a beam-splitter
     teleprompter rig.
@@ -358,7 +549,7 @@
   <div class="faq">
     <h2>Frequently asked questions</h2>
 
-    <h3>Is this teleprompter really free?</h3>
+    <h3>Is SpeechScroller really free?</h3>
     <p>Yes. It is completely free with no signup, no account, and no watermark. It runs entirely in your browser.</p>
 
     <h3>Do I need to download or install anything?</h3>
@@ -377,10 +568,6 @@
     <p>Yes, on mobile browsers that support speech recognition. A larger screen and an external mic give the most reliable tracking.</p>
   </div>
 </section>
-
-<div id="ph-badge" style="position: fixed; top: 16px; left: 16px; z-index: 5;">
-  <a href="https://www.producthunt.com/products/free-online-automatic-teleprompter?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-free-online-automatic-teleprompter" target="_blank" rel="noopener noreferrer"><img alt="Free Online Automatic Teleprompter - Free, voice-controlled teleprompter. No download, no signup. | Product Hunt" width="200" height="43" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1225578&theme=light&t=1787033122881"></a>
-</div>
 
 <div id="prompter">
   <div id="guide"></div>
@@ -900,7 +1087,7 @@
 
   // Demo text so it's testable immediately.
   $('script-input').value =
-`Welcome to the automatic voice teleprompter. As you read these words out loud, the screen scrolls automatically to keep pace with your voice.
+`Welcome to SpeechScroller. As you read these words out loud, the screen scrolls automatically to keep pace with your voice.
 
 It's as simple as that! Speak quickly and it keeps up, or slow down for emphasis and it waits for you. Feel free to pause completely. You can take a breath or answer a question, and your position will hold until you continue.
 
@@ -909,6 +1096,74 @@ You can press escape to exit, space bar to pause and resume, and place text in p
 If the recognition ever misses a word or two, don't worry. It looks ahead in the script and recovers as soon as it hears you again.
 
 That's all there is to it. Replace this text with your own script, press start, and just speak naturally!`;
+})();
+</script>
+
+<script>
+// Home page demo: a tiny prompter that "hears" itself read and scrolls along.
+(() => {
+  const textEl = document.getElementById('demo-text');
+  if (!textEl) return;
+  const heardEl = document.getElementById('demo-heard');
+  const stateEl = document.getElementById('demo-state');
+  const bars = [...document.querySelectorAll('.wave i')];
+  const setup = document.getElementById('setup');
+  const GUIDE = 86; // px from top of the view, matches .demo-guide
+
+  const script = "Read your script out loud and the words follow along. " +
+    "Pause for a breath and it waits for you. " +
+    "Skip a line and it catches up. " +
+    "No scrolling, no clicking, just talk.";
+  const spans = script.split(' ').map(w => {
+    const s = document.createElement('span');
+    s.textContent = w;
+    textEl.appendChild(s);
+    textEl.appendChild(document.createTextNode(' '));
+    return s;
+  });
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i = 0, timer = null;
+
+  function setWave(on) {
+    bars.forEach(b => { b.style.height = on ? (4 + Math.random() * 12) + 'px' : '4px'; });
+  }
+  function render() {
+    spans.forEach((s, k) => {
+      s.className = k < i ? 'spoken' : k === i ? 'current' : '';
+    });
+    const cur = spans[Math.min(i, spans.length - 1)];
+    // Sit the current line just above the guide arrow, like the real prompter.
+    textEl.style.transform = `translateY(${GUIDE - cur.offsetHeight - 4 - cur.offsetTop}px)`;
+    heardEl.textContent = spans.slice(Math.max(0, i - 5), i + 1).map(s => s.textContent).join(' ');
+  }
+  function step() {
+    // Don't animate while the prompter is open or the tab is hidden.
+    if (setup.style.display === 'none' || document.hidden) { timer = setTimeout(step, 600); return; }
+    render();
+    const word = spans[i].textContent;
+    const endOfSentence = /[.,]$/.test(word);
+    setWave(true);
+    stateEl.textContent = 'Listening';
+    let delay = 180 + word.length * 28;
+    if (endOfSentence) {
+      // Simulated pause: the wave goes flat and the scroll holds.
+      setTimeout(() => { setWave(false); stateEl.textContent = 'Waiting for you'; }, delay);
+      delay += 1100;
+    }
+    i++;
+    if (i >= spans.length) { i = 0; delay += 1200; }
+    timer = setTimeout(step, delay);
+  }
+
+  if (reduce) {
+    i = 9; render(); setWave(false);
+  } else {
+    // Keep the bars moving a little while a word is "being said".
+    setInterval(() => { if (stateEl.textContent === 'Listening') setWave(true); }, 140);
+    step();
+  }
+  window.addEventListener('resize', render);
 })();
 </script>
 </body>
