@@ -712,18 +712,36 @@
   const PHRASE_LEN = 5;         // how many recent heard words form the in-place probe phrase
   const PHRASE_THRESHOLD = 0.7; // fraction of the phrase that must line up in-place (30% tolerance)
   const SKIP_PHRASE_LEN = 4;    // consecutive exact-matching words required to trust a deliberate skip ahead
+  let missStreak = 0;           // fresh heard words in a row that didn't match the current spot
 
-  function advance(heardWords) {
+  // heardWords is the recent tail of the transcript (context for the phrase
+  // tiers). freshCount is how many of its last words are actually new since
+  // the previous recognition event. The recognizer resends the whole
+  // transcript on every update, so without this an already-consumed word
+  // (e.g. "you" in "...until you continue") gets matched a second time
+  // against the next script word and skips it.
+  function advance(heardWords, freshCount = heardWords.length) {
+    if (freshCount <= 0) return;
     let moved = false;
-    for (const hw of heardWords) {
+    for (const hw of heardWords.slice(-freshCount)) {
+      let hit = false;
       const limit = Math.min(words.length, pos + NEAR);
       for (let j = pos; j < limit; j++) {
         if (wordsMatch(hw, words[j].norm)) {
           setPos(j + 1);
-          moved = true;
+          moved = hit = true;
           break;
         }
       }
+      // Mishear recovery: we already heard something at this spot that didn't
+      // match (e.g. "two" for "to"), and this word matches the one after it.
+      // Treat the earlier word as the misheard current word and move past both.
+      // Needs that unmatched word first, so silence plus a stray word can't skip.
+      if (!hit && missStreak > 0 && pos + 1 < words.length && wordsMatch(hw, words[pos + 1].norm)) {
+        setPos(pos + 2);
+        moved = hit = true;
+      }
+      missStreak = hit ? 0 : missStreak + 1;
     }
     if (!moved && heardWords.length >= 2) {
       const phrase = heardWords.slice(-PHRASE_LEN);
@@ -774,6 +792,7 @@
   function setPos(newPos) {
     newPos = Math.max(0, Math.min(words.length, newPos));
     if (newPos === pos) return;
+    missStreak = 0; // any move (voice, arrow keys, restart) starts a fresh mishear count
     const fwd = newPos > pos;
     const lo = Math.min(pos, newPos), hi = Math.max(pos, newPos);
     for (let i = lo; i < hi; i++) words[i].el.classList.toggle('spoken', fwd);
@@ -808,6 +827,7 @@
 
   // ---------- Speech recognition ----------
   const micDot = $('mic-dot'), micLabel = $('mic-label'), heardEl = $('heard');
+  let lastHeard = []; // transcript words from the previous result event
 
   function startListening() {
     if (!SR) return;
@@ -818,6 +838,7 @@
     recognition.lang = navigator.language || 'en-US';
 
     recognition.onstart = () => {
+      lastHeard = []; // each (re)started session has a fresh transcript
       micDot.className = 'live';
       micLabel.textContent = 'listening';
     };
@@ -832,7 +853,15 @@
       }
       const heard = transcript.trim().split(/\s+/).map(normalize).filter(Boolean);
       heardEl.textContent = '“…' + heard.slice(-8).join(' ') + '”';
-      advance(heard.slice(-6));
+      // Only words past the part that's unchanged since the last event are
+      // new. Interim results get revised, so a changed word counts as new.
+      let same = 0;
+      const max = Math.min(heard.length, lastHeard.length);
+      while (same < max && heard[same] === lastHeard[same]) same++;
+      const fresh = heard.length - same;
+      lastHeard = heard;
+      const tail = heard.slice(-6);
+      advance(tail, Math.min(fresh, tail.length));
     };
 
     recognition.onerror = (e) => {
